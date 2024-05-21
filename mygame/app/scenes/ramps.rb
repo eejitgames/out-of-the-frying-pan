@@ -9,7 +9,13 @@
 
 # toolbar interaction is in a seperate file
 require 'app/scenes/ramps-toolbar.rb'
+module Scene
+  def self.tick_ramps(args)
+    RampsScene.tick(args)
+  end
 
+module RampsScene
+class << self
 def tick args
   tick_toolbar args
   tick_game args
@@ -49,6 +55,8 @@ def game_input args
 end
 
 def game_render args
+  draw_bg(args, WHITE)
+
   # for each terrain entry, render the line that represents the connection
   # from the tile's left_height to the tile's right_height
   args.outputs.primitives << args.state.terrain.map { |t| t.line }
@@ -103,7 +111,7 @@ def game_defaults args
     dx: 0,
     dy: 0,
     jump_power: 3,
-    path: 'sprites/square/blue.png',
+    path: 'sprites/blue.png',
     on_floor: false,
     on_ceiling: false,
     facing: 1
@@ -293,5 +301,6 @@ def calc_off_screen args
     args.state.player.on_floor = false
   end
 end
-
-$gtk.reset_and_replay "replay.txt", speed: 2
+end
+end
+end
