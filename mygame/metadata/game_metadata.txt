@@ -1,8 +1,8 @@
 devid=myitchusername
 devtitle=My Name
-gameid=my-game-title
-gametitle=My Game Title
-version=0.1-dev
+gameid=frying-pan
+gametitle=Out of the Frying Pan
+version=0.2-dev
 icon=metadata/icon.png
 
 # === Flags available at all licensing tiers ===
