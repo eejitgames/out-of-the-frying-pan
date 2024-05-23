@@ -1,5 +1,5 @@
-devid=myitchusername
-devtitle=My Name
+devid=eejitgames
+devtitle=CasualCatharsis, Illinore, and eejit
 gameid=frying-pan
 gametitle=Out of the Frying Pan
 version=0.2-dev
