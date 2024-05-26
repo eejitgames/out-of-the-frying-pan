@@ -1,10 +1,8 @@
 module Frying
-	class << self < platter
-		attr_reader :n_dishes
-
+	class Waiter < Platter
 		# constructor method
 		def initialize()
-			@n_dishes = :truth.num_dishes
+			@n_dishes = @@truth.num_dishes
 			@money_worth = 0
 			@plates = empty_platter()
 		end

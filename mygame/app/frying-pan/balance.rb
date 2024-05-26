@@ -1,5 +1,5 @@
 module Frying
-	class << self
+	class Balance
 		@angle = 0
 		@max_angle = 40
 

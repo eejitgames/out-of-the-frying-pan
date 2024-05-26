@@ -16,7 +16,7 @@ require "app/scenes/settings.rb"
 
 require "app/scenes/ramps.rb"
 
-require "app/frying-pan/platter.rb"
+require "app/frying-pan/main.rb"
 
 # NOTE: add all requires above this
 

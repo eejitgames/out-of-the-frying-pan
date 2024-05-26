@@ -175,27 +175,4 @@ end
 
 # add your tests here
 
-#test :emply_plates_correct_length do |args, assert|
-#  it "produces an empty platter XXXXXX of the correct length based on the superclass value"
-
-describe Frying do
-  describe '#empty_platter' do
-    it 'produces an string XXXXXX of the correct length based on the superclass value"' do
-      pla = Frying.platter.new(3)
-      expect(pla.empty_platter()).to eq("XXX")
-      tab = Frying.table.new()
-      expect(tab.empty_platter()).to eq("XXX")
-      wai = Frying.table.new()
-      expect(wai.empty_platter()).to eq("XXX")
-
-      pla2 = Frying.platter.new(6)
-      expect(pla2.empty_platter()).to eq("XXXXXX")
-      tab2 = Frying.table.new()
-      expect(tab2.empty_platter()).to eq("XXXXXX")
-      wai2 = Frying.table.new()
-      expect(wai2.empty_platter()).to eq("XXXXXX")
-    end
-  end
-end
-
 run_tests
