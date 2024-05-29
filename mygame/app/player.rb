@@ -25,13 +25,13 @@ module Player
                 when DIR_DOWN
                   curr_pos.merge({ y: curr_pos.y - 1 })
                 when DIR_RIGHT
-                  player.flip_horizontally = false
+                  player.flip_horizontally = true
                   curr_pos.merge({ x: curr_pos.x + 1 })
                 when DIR_LEFT
-                  player.flip_horizontally = true
+                  player.flip_horizontally = false
                   curr_pos.merge({ x: curr_pos.x - 1 })
                 end
-      player.merge!(new_pos)
+      player.merge!(new_pos) unless move.nil?
     end
   end
 end
