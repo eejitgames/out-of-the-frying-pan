@@ -23,8 +23,10 @@ module Scene
         end
 
         tick_pause_button(args, sprites) if mobile?
+        
+        puts60 "#{Sprite.for(:background)}"
 
-        draw_bg(args, BLACK)
+        draw_bg_sprite(args, { x: 0, y: 0, w: 1280, h: 720, path: Sprite.for(:background)})
 
         labels << label("GAMEPLAY", x: 40, y: args.grid.top - 40, size: SIZE_LG, font: FONT_BOLD)
         args.outputs.labels << labels
