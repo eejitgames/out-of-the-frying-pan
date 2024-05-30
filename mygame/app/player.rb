@@ -2,12 +2,13 @@ module Player
   class << self
     def create
       {
-        x: 640,
-        y: 360,
-        w: 47,
-        h: 51,
+        x: 606,
+        y: 155,
+        w: 47 * 3,
+        h: 51 * 3,
         path: Sprite.for(:player),
-        flip_horizontally: false
+        flip_horizontally: false,
+        speed: 8
       }
     end
     
@@ -21,15 +22,15 @@ module Player
       curr_pos = { x: player.x, y: player.y }
       new_pos = case move
                 when DIR_UP
-                  curr_pos.merge({ y: curr_pos.y + 1 })
+                  curr_pos.merge({ y: curr_pos.y + player.speed })
                 when DIR_DOWN
-                  curr_pos.merge({ y: curr_pos.y - 1 })
+                  curr_pos.merge({ y: curr_pos.y - player.speed })
                 when DIR_RIGHT
                   player.flip_horizontally = true
-                  curr_pos.merge({ x: curr_pos.x + 1 })
+                  curr_pos.merge({ x: curr_pos.x + player.speed })
                 when DIR_LEFT
                   player.flip_horizontally = false
-                  curr_pos.merge({ x: curr_pos.x - 1 })
+                  curr_pos.merge({ x: curr_pos.x - player.speed })
                 end
       player.merge!(new_pos) unless move.nil?
     end
