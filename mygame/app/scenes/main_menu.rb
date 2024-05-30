@@ -11,7 +11,10 @@ module Scene
         options = [
           {
             key: :start,
-            on_select: -> (args) { Scene.switch(args, :gameplay, reset: true) }
+            on_select: -> (args) {
+              Scene.starting_new_game(args)
+              Scene.switch(args, :gameplay, reset: true)
+            }
           },
           {
             key: :settings,
