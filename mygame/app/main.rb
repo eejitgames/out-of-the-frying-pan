@@ -17,5 +17,4 @@ require "app/scenes/ramps.rb"
 require "app/scenes/settings.rb"
 
 # NOTE: add all requires above this
-
 require "app/tick.rb"

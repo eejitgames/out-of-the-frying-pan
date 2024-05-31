@@ -25,12 +25,12 @@ module Scene
         tick_pause_button(args, sprites) if mobile?        
         draw_bg_sprite(args, { path: Sprite.for(:background) })
         
-        args.state.gameplay.player ||= Player.new
-        player = args.state.gameplay.player
+        args.state.gameplay.waiter ||= Player.new
+        player_sprite = args.state.gameplay.waiter.sprite_as_hash
+
+        args.state.gameplay.waiter.tick(args)
         
-        Player.tick(args)
-        
-        sprites << player
+        sprites << player_sprite
         
         args.outputs.labels << labels
         args.outputs.sprites << sprites
