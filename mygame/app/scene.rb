@@ -36,7 +36,7 @@ module Scene
 
     def starting_new_game(args)
       puts "Starting a new game"
-      args.state.gameplay.player = nil
+      args.state.gameplay.waiter = nil
     end
   end
 end

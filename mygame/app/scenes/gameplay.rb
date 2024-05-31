@@ -26,11 +26,10 @@ module Scene
         draw_bg_sprite(args, { path: Sprite.for(:background) })
         
         args.state.gameplay.waiter ||= Player.new
-        player_sprite = args.state.gameplay.waiter.sprite_as_hash
 
         args.state.gameplay.waiter.tick(args)
         
-        sprites << player_sprite
+        sprites << args.state.gameplay.waiter.sprite_as_hash
         
         args.outputs.labels << labels
         args.outputs.sprites << sprites
