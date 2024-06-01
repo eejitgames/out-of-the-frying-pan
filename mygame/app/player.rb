@@ -6,9 +6,11 @@ class Player
       @h = 51 * 3
       @path = Sprite.for(:player)
       @flip_horizontally = false
-      @velocity = { x: 7, y: 0 }
-      @velocity_min = -10
-      @velocity_max = 10
+      @velocity = { x: 0, y: 0 }
+      @velocity_min = -25
+      @velocity_max = 25
+      @acceleration = 2
+      @friction = 1
       @score = 0
   end
 
@@ -31,24 +33,29 @@ class Player
     move = DIR_RIGHT if right?(args)
     move = DIR_LEFT if left?(args)
 
-    curr_pos = { x: @x, y: @y }
-    new_pos = case move
-              when DIR_UP
-                curr_pos.merge({ y: curr_pos.y + @velocity.y })
-              when DIR_DOWN
-                curr_pos.merge({ y: curr_pos.y - @velocity.y })
-              when DIR_RIGHT
-                @flip_horizontally = true
-                curr_pos.merge({ x: curr_pos.x + @velocity.x })
-              when DIR_LEFT
-                @flip_horizontally = false
-                curr_pos.merge({ x: curr_pos.x - @velocity.x })
-              end
-    unless move.nil?
-      @x, @y = new_pos.x, new_pos.y
+    case move
+      when DIR_UP
+        @velocity.y += @acceleration
+      when DIR_DOWN
+        @velocity.y -= @acceleration
+      when DIR_RIGHT
+        @flip_horizontally = true
+        @velocity.x += @acceleration
+      when DIR_LEFT
+        @flip_horizontally = false
+        @velocity.x -= @acceleration
     end
 
-    @velocity = @velocity.transform_values { |v| v.cap_min_max(@velocity_min, @velocity_max) }
+    if @velocity.x > 0
+      @velocity.x -= @friction
+      @velocity.x = 0 if @velocity.x < 0
+    elsif @velocity.x < 0
+      @velocity.x += @friction
+      @velocity.x = 0 if @velocity.x > 0
+    end
+
+    @velocity.x = @velocity.x.cap_min_max(@velocity_min, @velocity_max)
+    @x += @velocity.x
     nil
   end
 end
