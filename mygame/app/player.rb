@@ -9,11 +9,11 @@ class Player
       @path = Sprite.for(:player)
       @flip_horizontally = false
       @velocity = { x: 0, y: 0 }
-      @velocity_min = -100
-      @velocity_max = 100
-      @acceleration = 1000
-      @friction_coefficient = 60
-      @mass = 100
+      @velocity_min = -20
+      @velocity_max = 20
+      @acceleration = 800
+      @friction = 5
+      @mass = 20
       @score = 0
       @right_hand_plates = 0
       @left_hand_plates = 0
@@ -38,7 +38,6 @@ class Player
     @right_hand_plates += 1 if add_plate_right_hand?(args)
     @left_hand_plates += 1 if add_plate_left_hand?(args)
     plate_balance = @right_hand_plates - @left_hand_plates
-    friction = @friction_coefficient / @mass
 
     case move
       when DIR_RIGHT
@@ -51,8 +50,9 @@ class Player
         puts "balance: #{plate_balance}"
     end
 
-    @velocity.x *= friction
-    @x += @velocity.x.cap_min_max(@velocity_min, @velocity_max)
+    @velocity.x *= @friction / @mass
+    @velocity.x = @velocity.x.cap_min_max(@velocity_min, @velocity_max)
+    @x += @velocity.x
     nil
   end
 end
