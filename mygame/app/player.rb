@@ -1,4 +1,6 @@
 class Player
+  attr_accessor :x, :y, :right_hand_plates, :left_hand_plates
+
   def initialize
       @x = 606
       @y = 155
@@ -7,11 +9,14 @@ class Player
       @path = Sprite.for(:player)
       @flip_horizontally = false
       @velocity = { x: 0, y: 0 }
-      @velocity_min = -25
-      @velocity_max = 25
-      @acceleration = 2
-      @friction = 1
+      @velocity_min = -100
+      @velocity_max = 100
+      @acceleration = 1000
+      @friction_coefficient = 60
+      @mass = 100
       @score = 0
+      @right_hand_plates = 0
+      @left_hand_plates = 0
   end
 
   def sprite_as_hash
@@ -30,23 +35,23 @@ class Player
     move = DIR_RIGHT if right?(args)
     move = DIR_LEFT if left?(args)
 
+    @right_hand_plates += 1 if add_plate_right_hand?(args)
+    @left_hand_plates += 1 if add_plate_left_hand?(args)
+    plate_balance = @right_hand_plates - @left_hand_plates
+    friction = @friction_coefficient / @mass
+
     case move
       when DIR_RIGHT
         @flip_horizontally = true
-        @velocity.x += @acceleration
+        @velocity.x += @acceleration / @mass
+        puts "balance: #{plate_balance}"
       when DIR_LEFT
         @flip_horizontally = false
-        @velocity.x -= @acceleration
+        @velocity.x -= @acceleration / @mass
+        puts "balance: #{plate_balance}"
     end
 
-    if @velocity.x > 0
-      @velocity.x -= @friction
-      @velocity.x = 0 if @velocity.x < 0
-    elsif @velocity.x < 0
-      @velocity.x += @friction
-      @velocity.x = 0 if @velocity.x > 0
-    end
-
+    @velocity.x *= friction
     @x += @velocity.x.cap_min_max(@velocity_min, @velocity_max)
     nil
   end
