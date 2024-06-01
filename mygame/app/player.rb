@@ -27,17 +27,10 @@ class Player
   end
 
   def tick(args)
-    move = nil
-    move = DIR_UP if up?(args)
-    move = DIR_DOWN if down?(args)
     move = DIR_RIGHT if right?(args)
     move = DIR_LEFT if left?(args)
 
     case move
-      when DIR_UP
-        @velocity.y += @acceleration
-      when DIR_DOWN
-        @velocity.y -= @acceleration
       when DIR_RIGHT
         @flip_horizontally = true
         @velocity.x += @acceleration
@@ -54,8 +47,7 @@ class Player
       @velocity.x = 0 if @velocity.x > 0
     end
 
-    @velocity.x = @velocity.x.cap_min_max(@velocity_min, @velocity_max)
-    @x += @velocity.x
+    @x += @velocity.x.cap_min_max(@velocity_min, @velocity_max)
     nil
   end
 end
