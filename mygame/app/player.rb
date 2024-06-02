@@ -4,8 +4,8 @@ class Player
   def initialize
       @x = 606
       @y = 155
-      @w = 47 * 3
-      @h = 51 * 3
+      @w = 47 * 2
+      @h = 51 * 2
       @path = Sprite.for(:player)
       @flip_horizontally = false
       @velocity = { x: 0, y: 0 }
@@ -35,19 +35,27 @@ class Player
     move = DIR_RIGHT if right?(args)
     move = DIR_LEFT if left?(args)
 
-    @right_hand_plates += 1 if add_plate_right_hand?(args)
-    @left_hand_plates += 1 if add_plate_left_hand?(args)
-    plate_balance = @right_hand_plates - @left_hand_plates
+    if add_plate_right_hand?(args)
+      @right_hand_plates += 1
+      @mass += 1
+    end
+
+    if add_plate_left_hand?(args)
+      @left_hand_plates += 1
+      @mass += 1
+    end
+
+    # plate_balance = @right_hand_plates - @left_hand_plates
 
     case move
       when DIR_RIGHT
         @flip_horizontally = true
         @velocity.x += @acceleration / @mass
-        puts "balance: #{plate_balance}"
+        # puts "balance: #{plate_balance}"
       when DIR_LEFT
         @flip_horizontally = false
         @velocity.x -= @acceleration / @mass
-        puts "balance: #{plate_balance}"
+        # puts "balance: #{plate_balance}"
     end
 
     @velocity.x *= @friction / @mass
