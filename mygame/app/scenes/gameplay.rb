@@ -39,7 +39,6 @@ module Scene
                     text: args.state.gameplay.waiter.right_hand_plates,
                     size_enum: 20
                   }
-
         sprites << args.state.gameplay.waiter.sprite_as_hash
 
         args.outputs.labels << labels

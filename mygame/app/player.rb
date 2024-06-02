@@ -1,5 +1,5 @@
 class Player
-  attr_accessor :x, :y, :right_hand_plates, :left_hand_plates
+  attr_accessor :x, :y, :right_hand_plates, :left_hand_plates, :plate_balance
 
   def initialize
       @x = 606
@@ -17,6 +17,8 @@ class Player
       @score = 0
       @right_hand_plates = 0
       @left_hand_plates = 0
+      @plate_mass = 0
+      @plate_balance = 0
   end
 
   def sprite_as_hash
@@ -37,28 +39,27 @@ class Player
 
     if add_plate_right_hand?(args)
       @right_hand_plates += 1
-      @mass += 1
+      @mass += @plate_mass
     end
 
     if add_plate_left_hand?(args)
       @left_hand_plates += 1
-      @mass += 1
+      @mass += @plate_mass
     end
 
-    # plate_balance = @right_hand_plates - @left_hand_plates
+    @plate_balance = (@right_hand_plates - @left_hand_plates) / 2
 
     case move
       when DIR_RIGHT
         @flip_horizontally = true
         @velocity.x += @acceleration / @mass
-        # puts "balance: #{plate_balance}"
       when DIR_LEFT
         @flip_horizontally = false
         @velocity.x -= @acceleration / @mass
-        # puts "balance: #{plate_balance}"
     end
 
     @velocity.x *= @friction / @mass
+    @velocity.x += @plate_balance
     @velocity.x = @velocity.x.cap_min_max(@velocity_min, @velocity_max)
     @x += @velocity.x
     nil
