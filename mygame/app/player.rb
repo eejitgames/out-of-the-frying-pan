@@ -11,7 +11,7 @@ class Player
       @velocity = { x: 0, y: 0 }
       @velocity_min = -20
       @velocity_max = 20
-      @acceleration = 800
+      @acceleration = 700
       @friction = 5
       @mass = 20
       @score = 0
