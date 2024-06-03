@@ -31,6 +31,13 @@ module Scene
         args.outputs.labels << labels
         args.outputs.sprites << sprites
       end
+
+      def switch(args, scene, reset: false, return_to: nil)
+        if (reset)
+          args.state.gameplay = nil
+        end
+        super(args, scene, reset, return_to)
+      end
     end
   end
 end
