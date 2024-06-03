@@ -33,5 +33,10 @@ module Scene
       args.state.scene = scene
       raise FinishTick.new
     end
+
+    def starting_new_game(args)
+      puts "Starting a new game"
+      args.state.gameplay = nil
+    end
   end
 end

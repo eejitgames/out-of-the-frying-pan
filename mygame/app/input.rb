@@ -51,6 +51,14 @@ def right?(args)
   args.inputs.right || args.state.swipe.right
 end
 
+def add_plate_left_hand?(args)
+  args.keyboard.key_up.z
+end
+
+def add_plate_right_hand?(args)
+  args.keyboard.key_up.x
+end
+
 # called by the main #tick method to keep track of swipes, you likely don't
 # need to call this yourself
 #

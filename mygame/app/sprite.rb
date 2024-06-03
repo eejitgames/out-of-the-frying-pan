@@ -10,6 +10,7 @@ module Sprite
     familiar: "sprites/familiar.png",
     player: "sprites/player.png",
     pause: "sprites/pause.png",
+    background: "sprites/fuds.png",
   }
 
   class << self
