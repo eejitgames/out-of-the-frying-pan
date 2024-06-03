@@ -1,4 +1,4 @@
-class Player
+class Player < Frying::Waiter
   attr_accessor :x, :y, :right_hand_plates, :left_hand_plates, :plate_balance
 
   def initialize
