@@ -13,8 +13,11 @@ require "app/player.rb"
 require "app/scenes/gameplay.rb"
 require "app/scenes/main_menu.rb"
 require "app/scenes/paused.rb"
-require "app/scenes/ramps.rb"
 require "app/scenes/settings.rb"
+
+require "app/scenes/ramps.rb"
+
+require "app/frying-pan/main.rb"
 
 # NOTE: add all requires above this
 require "app/tick.rb"

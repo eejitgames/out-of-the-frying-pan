@@ -6,3 +6,4 @@ require "lib/dragon_test.rb"
 
 # this must be required last
 require "test/tests.rb"
+require "test/frying-tests.rb"
