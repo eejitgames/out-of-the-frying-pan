@@ -8,7 +8,6 @@ require "app/scene.rb"
 require "app/game_setting.rb"
 require "app/sound.rb"
 require "app/text.rb"
-require "app/player.rb"
 
 require "app/scenes/gameplay.rb"
 require "app/scenes/main_menu.rb"
@@ -18,6 +17,8 @@ require "app/scenes/settings.rb"
 require "app/scenes/ramps.rb"
 
 require "app/frying-pan/main.rb"
+require "app/scenes/cook.rb"
+require "app/player.rb"
 
 # NOTE: add all requires above this
 require "app/tick.rb"
