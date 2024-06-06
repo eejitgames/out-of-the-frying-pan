@@ -19,6 +19,7 @@ class Player < Frying::Waiter
       @left_hand_plates = 0
       @plate_mass = 0
       @plate_balance = 0
+      super()
   end
 
   def sprite_as_hash

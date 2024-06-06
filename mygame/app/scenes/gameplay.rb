@@ -28,20 +28,20 @@ module Scene
 
         draw_bg_sprite(args, { path: Sprite.for(:background) })
 
-        args.state.gameplay.waiter ||= Player.new
+        args.state.gameplay.waiter ||= Frying::Player.new
 
         args.state.gameplay.waiter.tick(args)
 
-        labels << { x: args.state.gameplay.waiter.x - 10,
-                    y: args.state.gameplay.waiter.y + 100,
-                    text: args.state.gameplay.waiter.left_hand_plates,
-                    size_enum: 20
-                  }
-        labels << { x: args.state.gameplay.waiter.x + 74,
-                    y: args.state.gameplay.waiter.y + 100,
-                    text: args.state.gameplay.waiter.right_hand_plates,
-                    size_enum: 20
-                  }
+        args.state.gameplay.debug_platters ||= true
+
+        if args.state.gameplay.debug_platters
+          if args.state.gameplay.debug_sample_platter.nil?
+            debug_add_platters(args, args.state.gameplay.waiter)
+            args.state.gameplay.debug_sample_platter ||= true
+          end
+          debug_draw_text_platters(args, args.state.gameplay.waiter)
+        end
+
         sprites << args.state.gameplay.waiter.sprite_as_hash
 
         args.outputs.labels << labels
@@ -71,6 +71,30 @@ module Scene
           return pause(args)
         end
         sprites << pause_button
+      end
+
+      private
+
+      def debug_draw_text_platters(args, waiter)
+        def inner(args, platter, xpos, ypos)
+          platter.chars.map.with_index { |ch, ind| { x: xpos, y: ypos + 45*ind, text: ch, size_enum: 20 }}
+        end
+        args.outputs.labels << inner(args, waiter.left_plates, waiter.x - 10, waiter.y + 100)
+        args.outputs.labels << inner(args, waiter.middle_plates, waiter.x + 40, waiter.y + 120)
+        args.outputs.labels << inner(args, waiter.right_plates, waiter.x + 74, waiter.y + 100)
+        args
+      end
+
+      def debug_add_platters(args, waiter)
+        waiter.add("A", 1)
+        waiter.add("B", 1)
+        waiter.add("B", 1)
+        waiter.add("F", 2)
+        waiter.add("C", 3)
+        waiter.add("B", 3)
+        waiter.add("C", 3)
+        waiter.swap(nil, 2, 1)
+        waiter.swap(nil, 3, 2)
       end
     end
   end

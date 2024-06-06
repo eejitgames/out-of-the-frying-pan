@@ -4,7 +4,7 @@ module Frying
 
 		# constructor method
 		def initialize()
-			@n_dishes = @@truth.num_dishes
+			@n_dishes = @@num_dishes
 			@money_worth = 0
 			@plates = empty_platter()
 			@left_plates, @middle_plates, @right_plates = "", "", ""
