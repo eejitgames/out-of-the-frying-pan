@@ -7,19 +7,37 @@ module Frying
 			@n_dishes = @@num_dishes
 			@money_worth = 0
 			@plates = empty_platter()
-			@left_plates, @middle_plates, @right_plates = "", "", ""
+			@left_plates = "X"
+			@middle_plates = "X"
+			@right_plates = "X"
 		end
 
 		def add(args, to)
+			puts "GO"
+			puts @n_dishes
+			puts "1"
+			puts @@truth
+			puts "2"
+			puts @@truth.num_dishes
+			puts "STOP"
 			if to == 1
-				@left_plates << args
+				if @left_plates == "X"
+					@left_plates = ""
+				end
+				@left_plates = @left_plates.concat(args)
 			elsif to == 3
-				@right_plates << args
+				if @right_plates == "X"
+					@right_plates = ""
+				end
+				@right_plates = @right_plates.concat(args)
 			elsif to == 2
 				if @n_dishes == 2
 					add(args, 3)
 				else
-					@middle_plates << args
+					if @middle_plates == "X"
+						@middle_plates = ""
+					end
+					@middle_plates = @middle_plates.concat(args)
 				end
 			else
 				raise RangeError.new("Plate being added to non-existent hand")
@@ -44,13 +62,13 @@ module Frying
 			end
 
 			winrar = ""
-			if from == 1 && ! @left_plates.empty?
+			if from == 1 && ! @left_plates.empty? && @left_plates != "X"
 				winrar = @left_plates[-1]
 				@left_plates = @left_plates.chop
-			elsif from == 2 && ! @middle_plates.empty?
+			elsif from == 2 && ! @middle_plates.empty? && @middle_plates != "X"
 				winrar = @middle_plates[-1]
 				@middle_plates = @middle_plates.chop
-			elsif from == 3 && ! @right_plates.empty?
+			elsif from == 3 && ! @right_plates.empty? && @right_plates != "X"
 				winrar = @right_plates[-1]
 				@right_plates = @right_plates.chop
 			end
@@ -60,11 +78,11 @@ module Frying
 			end
 
 			if to == 1
-				@left_plates << winrar
+				@left_plates = @left_plates.concat(winrar)
 			elsif to == 2
-				@middle_plates << winrar
+				@middle_plates = @middle_plates.concat(winrar)
 			elsif to == 3
-				@right_plates << winrar
+				@right_plates = @right_plates.concat(winrar)
 			end
 
 			update_plates
@@ -84,10 +102,22 @@ module Frying
 		private
 
 		def update_plates
+			if @left_plates.empty?
+				@left_plates = "X"
+			end
+			if @middle_plates.empty?
+				@middle_plates = "X"
+			end
+			if @right_plates.empty?
+				@right_plates = "X"
+			end
 			if @n_dishes == 2
-				@plates = "".concat(@left_plates[-1], @right_plates[-1])
+				@plates = "".concat(@left_plates[-1])
+				@plates = @plates.concat(@right_plates[-1])
 			else
-				@plates = "".concat(@left_plates[-1], @middle_plates[-1], @right_plates[-1])
+				@plates = "".concat(@left_plates[-1])
+				@plates = @plates.concat(@middle_plates[-1])
+				@plates = @plates.concat(@right_plates[-1])
 			end
 			nil
 		end
