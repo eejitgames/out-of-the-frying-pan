@@ -13,13 +13,6 @@ module Frying
 		end
 
 		def add(args, to)
-			puts "GO"
-			puts @n_dishes
-			puts "1"
-			puts @@truth
-			puts "2"
-			puts @@truth.num_dishes
-			puts "STOP"
 			if to == 1
 				if @left_plates == "X"
 					@left_plates = ""
