@@ -1,5 +1,6 @@
 
 require "app/frying-pan/platter.rb"
+require "app/frying-pan/dish.rb"
 require "app/frying-pan/table.rb"
 require "app/frying-pan/waiter.rb"
 

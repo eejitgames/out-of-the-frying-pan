@@ -86,11 +86,11 @@ module Scene
       end
 
       def debug_add_platters(args, waiter)
-        waiter.add("A", 1)
-        waiter.add("B", 1)
+        waiter.add(Frying.meat_dish, 1)
+        waiter.add(Frying.noods_dish, 1)
         waiter.add("B", 1)
         waiter.add("F", 2)
-        waiter.add("C", 3)
+        waiter.add(Frying.salad_dish, 3)
         waiter.add("B", 3)
         waiter.add("C", 3)
         waiter.swap(nil, 2, 1)

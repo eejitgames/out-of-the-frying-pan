@@ -17,20 +17,20 @@ module Frying
 				if @left_plates == "X"
 					@left_plates = ""
 				end
-				@left_plates = @left_plates.concat(args)
+				@left_plates = @left_plates.concat(args.to_str)
 			elsif to == 3
 				if @right_plates == "X"
 					@right_plates = ""
 				end
-				@right_plates = @right_plates.concat(args)
+				@right_plates = @right_plates.concat(args.to_str)
 			elsif to == 2
 				if @n_dishes == 2
-					add(args, 3)
+					add(args.to_str, 3)
 				else
 					if @middle_plates == "X"
 						@middle_plates = ""
 					end
-					@middle_plates = @middle_plates.concat(args)
+					@middle_plates = @middle_plates.concat(args.to_str)
 				end
 			else
 				raise RangeError.new("Plate being added to non-existent hand")
