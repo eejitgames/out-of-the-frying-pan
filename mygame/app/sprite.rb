@@ -11,6 +11,9 @@ module Sprite
     player: "sprites/player.png",
     pause: "sprites/pause.png",
     background: "sprites/fuds.png",
+    meat: "sprites/meat.png",
+    noodles: "sprites/noods.png",
+    salad: "sprites/greens.png"
   }
 
   class << self

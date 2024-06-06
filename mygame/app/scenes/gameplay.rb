@@ -7,6 +7,7 @@ module Scene
     class << self
       # This is your main entrypoint into the actual fun part of your game!
       def tick(args)
+#region Initialize
         labels = []
         sprites = []
 
@@ -23,6 +24,8 @@ module Scene
         end
 
         tick_pause_button(args, sprites) if mobile?        
+#endregion
+
         draw_bg_sprite(args, { path: Sprite.for(:background) })
 
         args.state.gameplay.waiter ||= Player.new
