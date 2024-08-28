@@ -1,9 +1,0 @@
-{
-	"types": [
-		"feat",
-		"adjust",
-		"fix",
-		"chore"
-	],
-	"breaking_changes": true
-}
