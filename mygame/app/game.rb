@@ -15,7 +15,7 @@ class Game
 
     # update player x and y, prevent player from going too far back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
-    state.player.y = (state.player.y + @vector_y).cap_min_max(0, 0.26)
+    state.player.y = (state.player.y + @vector_y).cap_min_max(0.03, 0.31)
 
     state.clock += 1
   end
@@ -52,6 +52,8 @@ class Game
       y: state.player.y * @screen_height,
       w: 47 * 2 * (1 - state.player.y),
       h: 51 * 2 * (1 - state.player.y),
+      anchor_x: 0.5,
+      anchor_y: 0.5,
       path: "sprites/player.png"
     }
   end
