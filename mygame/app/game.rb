@@ -12,7 +12,6 @@ class Game
 
   def calc
     return if game_has_lost_focus?
-
     # update player x and y, prevent player from going too far back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
     state.player.y = (state.player.y + @vector_y).cap_min_max(0.03, 0.31)
@@ -35,6 +34,7 @@ class Game
   end
 
   def input
+    return if game_has_lost_focus?
     vector = inputs.directional_vector
     if vector
       @vector_x = vector.x * state.player.speed
