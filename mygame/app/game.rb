@@ -27,7 +27,7 @@ class Game
     @screen_width = 1280
     state.clock ||= 0
     state.player ||= {
-      x: 0.5,
+      x: 0.48,
       y: 0.22,
       speed: 0.005
     }
@@ -59,8 +59,8 @@ class Game
     outputs.primitives << {
       x: state.player.x * @screen_width,
       y: state.player.y * @screen_height,
-      w: 47,
-      h: 51,
+      w: 47 * 2,
+      h: 51 * 2,
       path: "sprites/player.png"
     }
   end
