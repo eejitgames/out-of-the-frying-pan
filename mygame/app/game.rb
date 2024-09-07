@@ -28,7 +28,7 @@ class Game
     state.clock ||= 0
     state.player ||= {
       x: 0.5,
-      y: 0.1,
+      y: 0.22,
       speed: 0.005
     }
     @defaults_set = :true
@@ -55,6 +55,7 @@ class Game
   end
 
   def render
+    outputs.primitives << { x: 0, y: 0, w: 1280, h: 720, path: "sprites/fuds.png" }
     outputs.primitives << {
       x: state.player.x * @screen_width,
       y: state.player.y * @screen_height,
