@@ -15,7 +15,7 @@ class Game
 
     # update player x and y
     state.player.x = (state.player.x + @player_left + @player_right).cap_min_max(0, 1)
-    state.player.y = (state.player.y + @player_up + @player_down).cap_min_max(0, 1)
+    state.player.y = (state.player.y + @player_up + @player_down).cap_min_max(0, 0.26)
 
     state.clock += 1
   end
