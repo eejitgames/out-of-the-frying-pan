@@ -59,8 +59,8 @@ class Game
     outputs.primitives << {
       x: state.player.x * @screen_width,
       y: state.player.y * @screen_height,
-      w: 47 * 2,
-      h: 51 * 2,
+      w: 47 * 2 * (1 - state.player.y),
+      h: 51 * 2 * (1 - state.player.y),
       path: "sprites/player.png"
     }
   end
