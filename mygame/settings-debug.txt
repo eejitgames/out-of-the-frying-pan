@@ -1,1 +1,0 @@
-sfx:true,music:true,fullscreen:false

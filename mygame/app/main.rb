@@ -1,23 +1,18 @@
-require "app/input.rb"
-require "app/sprite.rb"
-require "app/util.rb"
+require "app/game.rb"
 
-require "app/constants.rb"
-require "app/menu.rb"
-require "app/scene.rb"
-require "app/game_setting.rb"
-require "app/sound.rb"
-require "app/text.rb"
-require "app/player.rb"
+def boot args
+  args.state = nil
+end
 
-require "app/scenes/gameplay.rb"
-require "app/scenes/main_menu.rb"
-require "app/scenes/paused.rb"
-require "app/scenes/settings.rb"
+def tick args
+  args.state ||= {}
+  $game ||= Game.new
+  $game.args = args
+  $game.tick
+end
 
-require "app/scenes/ramps.rb"
+def reset args
+  $game = nil
+end
 
-require "app/frying-pan/main.rb"
-
-# NOTE: add all requires above this
-require "app/tick.rb"
+GTK.reset
