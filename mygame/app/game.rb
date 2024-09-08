@@ -30,6 +30,16 @@ class Game
       y: 0.22,
       speed: 0.005
     }
+    state.tables ||= {
+      table1: { x: 0.08, y: 0.32 },
+      table2: { x: 0.27, y: 0.32 },
+      table3: { x: 0.715, y: 0.32 },
+      table4: { x: 0.90, y: 0.32 },
+      table5: { x: 0.10, y: 0.1  },
+      table6: { x: 0.34, y: 0.1  },
+      table7: { x: 0.63, y: 0.1  },
+      table8: { x: 0.86, y: 0.1  }
+    }
     @defaults_set = :true
   end
 
@@ -47,6 +57,19 @@ class Game
 
   def render
     outputs.primitives << { x: 0, y: 0, w: 1280, h: 720, path: "sprites/fuds.png" }
+
+    state.tables.each do |id, table|
+      outputs.primitives << {
+        x: table.x * @screen_width,
+        y: table.y * @screen_height,
+        w: 139 * 1.7 * (1 - table.y),
+        h: 62 * 1.7 * (1 - table.y),
+        anchor_x: 0.5,
+        anchor_y: 0.5,
+        path: "sprites/table.png",
+        flip_horizontally: table.x * @screen_width < @screen_width / 2,
+      }
+    end
     outputs.primitives << {
       x: state.player.x * @screen_width,
       y: state.player.y * @screen_height,
@@ -78,3 +101,5 @@ class Game
     puts msg unless gtk.production
   end
 end
+
+GTK.reset
