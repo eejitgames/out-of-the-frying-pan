@@ -17,11 +17,13 @@ class Game
     player_point_y_dir = { x: x_to_screen(state.player.x), y: y_to_screen(state.player.y + @vector_y), w: 0, h: 0 }
 
     state.tables.each do |id, table|
+      width = w_to_screen(139, 1.7, table.y)
+      height = h_to_screen(62, 1.7, table.y)
       table_rect = [
-        x_to_screen(table.x) - 139/2,
-        y_to_screen(table.y) - 62/2,
-        w_to_screen(139, 1.7, table.y),
-        h_to_screen(62, 1.7, table.y)
+        x_to_screen(table.x) - width/2,
+        y_to_screen(table.y) - height/2,
+        width,
+        height
       ]
 
       if player_point_x_dir.inside_rect?(table_rect)
