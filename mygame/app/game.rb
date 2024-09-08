@@ -40,6 +40,9 @@ class Game
       table7: { x: 0.63, y: 0.1  },
       table8: { x: 0.86, y: 0.1  }
     }
+    @vector_x = 0
+    @vector_y = 0
+    @player_flip = true
     @defaults_set = :true
   end
 
@@ -49,6 +52,8 @@ class Game
     if vector
       @vector_x = vector.x * state.player.speed
       @vector_y = vector.y * state.player.speed
+      @player_flip = true if @vector_x > 0
+      @player_flip = false if @vector_x < 0
     else
       @vector_x = 0
       @vector_y = 0
@@ -78,7 +83,8 @@ class Game
       h: 51 * 2 * (1 - state.player.y),
       anchor_x: 0.5,
       anchor_y: 0.5,
-      path: "sprites/player.png"
+      path: "sprites/player.png",
+      flip_horizontally: @player_flip
     }
     outputs.primitives << render_items.sort_by { |hash| hash.y }.reverse
   end
