@@ -13,24 +13,25 @@ class Game
   def calc
     return if game_has_lost_focus?
     # check vector_x and vector_y separately, to see if they put you in a table rect
-    player_point_x_dir = { x: x_to_screen(state.player.x + @vector_x), y: y_to_screen(state.player.y), w: 0, h: 0 }
-    player_point_y_dir = { x: x_to_screen(state.player.x), y: y_to_screen(state.player.y + @vector_y), w: 0, h: 0 }
+    player_width = w_to_screen(47, 2.5, state.player.y)
+    player_rect_x_dir = { x: x_to_screen(state.player.x + @vector_x) - player_width/2, y: y_to_screen(state.player.y), w: player_width, h: 0 }
+    player_rect_y_dir = { x: x_to_screen(state.player.x) - player_width/2, y: y_to_screen(state.player.y + @vector_y), w: player_width, h: 0 }
 
     state.tables.each do |id, table|
-      width = w_to_screen(139, 1.7, table.y)
-      height = h_to_screen(62, 1.7, table.y)
-      table_rect = [
-        x_to_screen(table.x) - width/2,
-        y_to_screen(table.y) - height/2,
-        width,
-        height
-      ]
+      table_width = w_to_screen(139, 1.7, table.y)
+      table_height = h_to_screen(62, 1.7, table.y)
+      table_rect = {
+        x: x_to_screen(table.x) - table_width/2,
+        y: y_to_screen(table.y) - table_height/2,
+        w: table_width,
+        h: table_height
+      }
 
-      if player_point_x_dir.inside_rect?(table_rect)
+      if player_rect_x_dir.intersect_rect?(table_rect)
         @vector_x = 0
       end
 
-      if player_point_y_dir.inside_rect?(table_rect)
+      if player_rect_y_dir.intersect_rect?(table_rect)
         @vector_y = 0
       end
     end
@@ -113,6 +114,7 @@ class Game
       path: "sprites/player.png",
       flip_horizontally: @player_flip
     }
+
     outputs.primitives << render_items.sort_by { |hash| hash.y }.reverse
   end
 
