@@ -13,6 +13,25 @@ class Game
   def calc
     return if game_has_lost_focus?
     # check vector_x and vector_y separately, to see if they put you in a table rect
+    player_point_x_dir = { x: x_to_screen(state.player.x + @vector_x), y: y_to_screen(state.player.y), w: 0, h: 0 }
+    player_point_y_dir = { x: x_to_screen(state.player.x), y: y_to_screen(state.player.y + @vector_y), w: 0, h: 0 }
+
+    state.tables.each do |id, table|
+      table_rect = [
+        x_to_screen(table.x) - 139/2,
+        y_to_screen(table.y) - 62/2,
+        w_to_screen(139, 1.7, table.y),
+        h_to_screen(62, 1.7, table.y)
+      ]
+
+      if player_point_x_dir.inside_rect?(table_rect)
+        @vector_x = 0
+      end
+
+      if player_point_y_dir.inside_rect?(table_rect)
+        @vector_y = 0
+      end
+    end
 
     # update player x and y, prevent player from going too far forward/back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
@@ -66,6 +85,8 @@ class Game
     outputs.primitives << { x: 0, y: 0, w: 1280, h: 720, path: "sprites/fuds.png" }
 
     render_items = []
+
+    # tables
     state.tables.each do |id, table|
       render_items << {
         x: x_to_screen(table.x),
@@ -78,6 +99,8 @@ class Game
         flip_horizontally: table.x * @screen_width < @screen_width / 2,
       }
     end
+
+    # player
     render_items << {
       x: x_to_screen(state.player.x),
       y: y_to_screen(state.player.y),
