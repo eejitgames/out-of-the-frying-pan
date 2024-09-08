@@ -23,7 +23,6 @@ class Game
 
   def defaults
     return if @defaults_set
-    puts_dev "setting defaults"
     @screen_height = 720
     @screen_width = 1280
     state.clock ||= 0
@@ -114,18 +113,14 @@ class Game
 
     if focus != state.lost_focus
       if focus
-        puts_dev "lost focus"
+        # putz "lost focus"
         # audio[:music].paused = true
       else
-        puts_dev "gained focus"
+        # putz "gained focus"
         # audio[:music].paused = false
       end
     end
     state.lost_focus = focus
-  end
-
-  def puts_dev(msg)
-    puts msg unless gtk.production
   end
 end
 
