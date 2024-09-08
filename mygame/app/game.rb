@@ -12,7 +12,9 @@ class Game
 
   def calc
     return if game_has_lost_focus?
-    # update player x and y, prevent player from going too far back in the scene
+    # check vector_x and vector_y separately, to see if they put you in a table rect
+
+    # update player x and y, prevent player from going too far forward/back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
     state.player.y = (state.player.y + @vector_y).cap_min_max(0.03, 0.31)
 
@@ -28,17 +30,18 @@ class Game
     state.player ||= {
       x: 0.48,
       y: 0.22,
-      speed: 0.005
+      speed: 0.005,
+
     }
     state.tables ||= {
       table1: { x: 0.08, y: 0.32 },
       table2: { x: 0.27, y: 0.32 },
       table3: { x: 0.715, y: 0.32 },
-      table4: { x: 0.90, y: 0.32 },
+      table4: { x: 0.91, y: 0.32 },
       table5: { x: 0.10, y: 0.1  },
       table6: { x: 0.34, y: 0.1  },
       table7: { x: 0.63, y: 0.1  },
-      table8: { x: 0.86, y: 0.1  }
+      table8: { x: 0.87, y: 0.1  }
     }
     @vector_x = 0
     @vector_y = 0
@@ -66,10 +69,10 @@ class Game
     render_items = []
     state.tables.each do |id, table|
       render_items << {
-        x: table.x * @screen_width,
-        y: table.y * @screen_height,
-        w: 139 * 1.7 * (1 - table.y),
-        h: 62 * 1.7 * (1 - table.y),
+        x: x_to_screen(table.x),
+        y: y_to_screen(table.y),
+        w: w_to_screen(139, 1.7, table.y),
+        h: h_to_screen(62, 1.7, table.y),
         anchor_x: 0.5,
         anchor_y: 0.5,
         path: "sprites/table.png",
@@ -77,16 +80,32 @@ class Game
       }
     end
     render_items << {
-      x: state.player.x * @screen_width,
-      y: state.player.y * @screen_height,
-      w: 47 * 2 * (1 - state.player.y),
-      h: 51 * 2 * (1 - state.player.y),
+      x: x_to_screen(state.player.x),
+      y: y_to_screen(state.player.y),
+      w: w_to_screen(47, 2.5, state.player.y),
+      h: h_to_screen(51, 2.5, state.player.y),
       anchor_x: 0.5,
       anchor_y: 0.5,
       path: "sprites/player.png",
       flip_horizontally: @player_flip
     }
     outputs.primitives << render_items.sort_by { |hash| hash.y }.reverse
+  end
+
+  def x_to_screen(x)
+    x * @screen_width
+  end
+
+  def y_to_screen(y)
+    y * @screen_height
+  end
+
+  def w_to_screen(w, scale, y)
+    w * scale * (1 - y)
+  end
+
+  def h_to_screen(h, scale, y)
+    h * scale * (1 - y)
   end
 
   def game_has_lost_focus?
