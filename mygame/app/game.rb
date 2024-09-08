@@ -58,8 +58,9 @@ class Game
   def render
     outputs.primitives << { x: 0, y: 0, w: 1280, h: 720, path: "sprites/fuds.png" }
 
+    render_items = []
     state.tables.each do |id, table|
-      outputs.primitives << {
+      render_items << {
         x: table.x * @screen_width,
         y: table.y * @screen_height,
         w: 139 * 1.7 * (1 - table.y),
@@ -70,7 +71,7 @@ class Game
         flip_horizontally: table.x * @screen_width < @screen_width / 2,
       }
     end
-    outputs.primitives << {
+    render_items << {
       x: state.player.x * @screen_width,
       y: state.player.y * @screen_height,
       w: 47 * 2 * (1 - state.player.y),
@@ -79,6 +80,7 @@ class Game
       anchor_y: 0.5,
       path: "sprites/player.png"
     }
+    outputs.primitives << render_items.sort_by { |hash| hash.y }.reverse
   end
 
   def game_has_lost_focus?
