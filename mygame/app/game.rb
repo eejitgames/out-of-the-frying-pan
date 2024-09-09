@@ -16,7 +16,12 @@ class Game
     player_rect_x_dir = calc_player_rect(47, 2.5, state.player.x + @vector_x, state.player.y)
     player_rect_y_dir = calc_player_rect(47, 2.5, state.player.x, state.player.y + @vector_y)
 
-    state.tables.each do |id, table|
+    # use quad tree and find_intersect_rect_quad_tree to determine collision with player
+    @vector_x = 0 if geometry.find_intersect_rect_quad_tree player_rect_x_dir, @tables_quad_tree
+    @vector_y = 0 if geometry.find_intersect_rect_quad_tree player_rect_y_dir, @tables_quad_tree
+
+=begin
+    @tables.each do |id, table|
       table_width = w_to_screen(139, 1.7, table.y)
       table_height = h_to_screen(62, 1.7, table.y)
       table_rect = {
@@ -34,6 +39,7 @@ class Game
         @vector_y = 0
       end
     end
+=end
 
     # update player x and y, also prevent player from going too far forward/back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
@@ -53,7 +59,7 @@ class Game
       speed: 0.005,
 
     }
-    state.tables ||= {
+    @tables ||= {
       table1: { x: 0.08, y: 0.32 },
       table2: { x: 0.29, y: 0.32 },
       table3: { x: 0.69, y: 0.32 },
@@ -63,6 +69,20 @@ class Game
       table7: { x: 0.63, y: 0.1  },
       table8: { x: 0.87, y: 0.1  }
     }
+
+    table_rects = @tables.map do |id, table|
+      table_width = w_to_screen(139, 1.7, table.y)
+      table_height = h_to_screen(62, 1.7, table.y)
+        {
+          x: x_to_screen(table.x) - table_width/2,
+          y: y_to_screen(table.y) - table_height/8,
+          w: table_width,
+          h: table_height/1.5
+        }
+      end
+
+    @tables_quad_tree ||= geometry.quad_tree_create table_rects
+
     @vector_x = 0
     @vector_y = 0
     @player_flip = true
@@ -89,7 +109,7 @@ class Game
     render_items = []
 
     # tables
-    state.tables.each do |id, table|
+    @tables.each do |id, table|
       render_items << {
         x: x_to_screen(table.x),
         y: y_to_screen(table.y),
@@ -101,9 +121,10 @@ class Game
         flip_horizontally: table.x * @screen_width < @screen_width / 2,
       }
     end
+
 =begin
     # debug tables
-    state.tables.each do |id, table|
+    @tables.each do |id, table|
       table_width = w_to_screen(139, 1.7, table.y)
       table_height = h_to_screen(62, 1.7, table.y)
       table_border = {
@@ -120,6 +141,7 @@ class Game
     player_border = calc_player_rect(47, 2.5, state.player.x, state.player.y).merge(path: :pixel, r: 200, g: 200, b: 200).border
     render_items << player_border
 =end
+
     # player
     render_items << {
       x: x_to_screen(state.player.x),
