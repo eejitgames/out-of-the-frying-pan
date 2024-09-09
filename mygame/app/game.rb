@@ -20,27 +20,6 @@ class Game
     @vector_x = 0 if geometry.find_intersect_rect_quad_tree player_rect_x_dir, @tables_quad_tree
     @vector_y = 0 if geometry.find_intersect_rect_quad_tree player_rect_y_dir, @tables_quad_tree
 
-=begin
-    @tables.each do |id, table|
-      table_width = w_to_screen(139, 1.7, table.y)
-      table_height = h_to_screen(62, 1.7, table.y)
-      table_rect = {
-        x: x_to_screen(table.x) - table_width/2,
-        y: y_to_screen(table.y) - table_height/8,
-        w: table_width,
-        h: table_height/1.5
-      }
-
-      if player_rect_x_dir.intersect_rect?(table_rect)
-        @vector_x = 0
-      end
-
-      if player_rect_y_dir.intersect_rect?(table_rect)
-        @vector_y = 0
-      end
-    end
-=end
-
     # update player x and y, also prevent player from going too far forward/back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
     state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 0.39)
@@ -57,8 +36,8 @@ class Game
       x: 0.48,
       y: 0.22,
       speed: 0.005,
-
     }
+
     @tables ||= {
       table1: { x: 0.08, y: 0.32 },
       table2: { x: 0.29, y: 0.32 },
@@ -82,7 +61,6 @@ class Game
       end
 
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
-
     @vector_x = 0
     @vector_y = 0
     @player_flip = true
@@ -121,26 +99,6 @@ class Game
         flip_horizontally: table.x * @screen_width < @screen_width / 2,
       }
     end
-
-=begin
-    # debug tables
-    @tables.each do |id, table|
-      table_width = w_to_screen(139, 1.7, table.y)
-      table_height = h_to_screen(62, 1.7, table.y)
-      table_border = {
-        x: x_to_screen(table.x) - table_width/2,
-        y: y_to_screen(table.y) - table_height/8,
-        w: table_width,
-        h: table_height/1.5,
-        path: :pixel
-        }.border
-      render_items << table_border
-    end
-
-    # debug player
-    player_border = calc_player_rect(47, 2.5, state.player.x, state.player.y).merge(path: :pixel, r: 200, g: 200, b: 200).border
-    render_items << player_border
-=end
 
     # player
     render_items << {
