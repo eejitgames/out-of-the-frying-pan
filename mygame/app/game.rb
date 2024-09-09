@@ -13,16 +13,17 @@ class Game
   def calc
     return if game_has_lost_focus?
     # check vector_x and vector_y separately, to see if they intersect with a table rect
-    player_rect_x_dir = calc_player_rect(47, 2.5, @player.x + @vector_x, @player.y)
-    player_rect_y_dir = calc_player_rect(47, 2.5, @player.x, @player.y + @vector_y)
+    player_rect_x_dir = calc_player_rect(47, 2.5, state.player.x + @vector_x, state.player.y)
+    player_rect_y_dir = calc_player_rect(47, 2.5, state.player.x, state.player.y + @vector_y)
 
     # use quad tree and find_intersect_rect_quad_tree to determine collision with player
     @vector_x = 0 if geometry.find_intersect_rect_quad_tree player_rect_x_dir, @tables_quad_tree
     @vector_y = 0 if geometry.find_intersect_rect_quad_tree player_rect_y_dir, @tables_quad_tree
 
     # update player x and y, also prevent player from going too far forward/back in the scene
-    @player.x = (@player.x + @vector_x).cap_min_max(0, 1)
-    @player.y = (@player.y + @vector_y).cap_min_max(0.02, 0.39)
+    state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
+    state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 0.49)
+    # state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 1)
 
     @clock += 1
   end
@@ -32,7 +33,7 @@ class Game
     @screen_height ||= 720
     @screen_width ||= 1280
     @clock ||= 0
-    @player ||= {
+    state.player ||= {
       x: 0.48,
       y: 0.22,
       speed: 0.005,
@@ -63,7 +64,7 @@ class Game
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
     @vector_x = 0
     @vector_y = 0
-    @player_flip = true
+    state.player_flip = true
     @defaults_set = :true
   end
 
@@ -71,10 +72,10 @@ class Game
     return if game_has_lost_focus?
     vector = inputs.directional_vector
     if vector
-      @vector_x = vector.x * @player.speed
-      @vector_y = vector.y * @player.speed
-      @player_flip = true if @vector_x > 0
-      @player_flip = false if @vector_x < 0
+      @vector_x = vector.x * state.player.speed
+      @vector_y = vector.y * state.player.speed
+      state.player_flip = true if @vector_x > 0
+      state.player_flip = false if @vector_x < 0
     else
       @vector_x = 0
       @vector_y = 0
@@ -102,14 +103,14 @@ class Game
 
     # player
     render_items << {
-      x: x_to_screen(@player.x),
-      y: y_to_screen(@player.y),
-      w: w_to_screen(47, 2.5, @player.y),
-      h: h_to_screen(51, 2.5, @player.y),
+      x: x_to_screen(state.player.x),
+      y: y_to_screen(state.player.y),
+      w: w_to_screen(47, 2.5, state.player.y),
+      h: h_to_screen(51, 2.5, state.player.y),
       anchor_x: 0.5,
       anchor_y: 0.5,
       path: "sprites/player.png",
-      flip_horizontally: @player_flip
+      flip_horizontally: state.player_flip
     }
 
     outputs.primitives << render_items.sort_by { |item| item.y }.reverse
