@@ -12,19 +12,18 @@ class Game
 
   def calc
     return if game_has_lost_focus?
-    # check vector_x and vector_y separately, to see if they put you in a table rect
-    player_width = w_to_screen(47, 2.5, state.player.y)
-    player_rect_x_dir = { x: x_to_screen(state.player.x + @vector_x) - player_width/2, y: y_to_screen(state.player.y), w: player_width, h: 0 }
-    player_rect_y_dir = { x: x_to_screen(state.player.x) - player_width/2, y: y_to_screen(state.player.y + @vector_y), w: player_width, h: 0 }
+    # check vector_x and vector_y separately, to see if they intersect with a table rect
+    player_rect_x_dir = calc_player_rect(47, 2.5, state.player.x + @vector_x, state.player.y)
+    player_rect_y_dir = calc_player_rect(47, 2.5, state.player.x, state.player.y + @vector_y)
 
     state.tables.each do |id, table|
       table_width = w_to_screen(139, 1.7, table.y)
       table_height = h_to_screen(62, 1.7, table.y)
       table_rect = {
         x: x_to_screen(table.x) - table_width/2,
-        y: y_to_screen(table.y) - table_height/2,
+        y: y_to_screen(table.y) - table_height/8,
         w: table_width,
-        h: table_height
+        h: table_height/1.5
       }
 
       if player_rect_x_dir.intersect_rect?(table_rect)
@@ -36,9 +35,9 @@ class Game
       end
     end
 
-    # update player x and y, prevent player from going too far forward/back in the scene
+    # update player x and y, also prevent player from going too far forward/back in the scene
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
-    state.player.y = (state.player.y + @vector_y).cap_min_max(0.03, 0.31)
+    state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 0.39)
 
     state.clock += 1
   end
@@ -56,8 +55,8 @@ class Game
     }
     state.tables ||= {
       table1: { x: 0.08, y: 0.32 },
-      table2: { x: 0.27, y: 0.32 },
-      table3: { x: 0.715, y: 0.32 },
+      table2: { x: 0.29, y: 0.32 },
+      table3: { x: 0.69, y: 0.32 },
       table4: { x: 0.91, y: 0.32 },
       table5: { x: 0.10, y: 0.1  },
       table6: { x: 0.34, y: 0.1  },
@@ -102,7 +101,25 @@ class Game
         flip_horizontally: table.x * @screen_width < @screen_width / 2,
       }
     end
+=begin
+    # debug tables
+    state.tables.each do |id, table|
+      table_width = w_to_screen(139, 1.7, table.y)
+      table_height = h_to_screen(62, 1.7, table.y)
+      table_border = {
+        x: x_to_screen(table.x) - table_width/2,
+        y: y_to_screen(table.y) - table_height/8,
+        w: table_width,
+        h: table_height/1.5,
+        path: :pixel
+        }.border
+      render_items << table_border
+    end
 
+    # debug player
+    player_border = calc_player_rect(47, 2.5, state.player.x, state.player.y).merge(path: :pixel, r: 200, g: 200, b: 200).border
+    render_items << player_border
+=end
     # player
     render_items << {
       x: x_to_screen(state.player.x),
@@ -115,7 +132,7 @@ class Game
       flip_horizontally: @player_flip
     }
 
-    outputs.primitives << render_items.sort_by { |hash| hash.y }.reverse
+    outputs.primitives << render_items.sort_by { |item| item.y }.reverse
   end
 
   def x_to_screen(x)
@@ -132,6 +149,19 @@ class Game
 
   def h_to_screen(h, scale, y)
     h * scale * (1 - y)
+  end
+
+  def calc_player_width_for_hitbox_with_tables(w, scale, y)
+    if y > 0.23
+      w_to_screen(w, scale, 0.31)
+    else
+      w_to_screen(w, scale, 0.12)
+    end
+  end
+
+  def calc_player_rect(w, scale, x, y)
+    player_width = calc_player_width_for_hitbox_with_tables(w, scale, y)
+    { x: x_to_screen(x) - player_width/2, y: y_to_screen(y), w: player_width, h: 0 }
   end
 
   def game_has_lost_focus?
