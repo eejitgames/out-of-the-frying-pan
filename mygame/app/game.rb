@@ -8,7 +8,7 @@ class Game
     render
 
     outputs.debug.watch state
-    outputs.debug.watch "customers walking: #{@customers.size}"
+    # outputs.debug.watch "customers walking: #{@customers.size}"
   end
 
   def calc
@@ -27,6 +27,8 @@ class Game
 
     # customers walking along outside
     update_walking_customers
+    check_customers_at_entrance
+    update_queueing_customers
 
     @clock += 1
   end
@@ -160,19 +162,17 @@ class Game
       path: "sprites/player.png",
       flip_horizontally: @player_flip
     }
-=begin
     # placeholder/doorway/entrance
     render_items << {
       x: x_to_screen(0.74),
-      y: y_to_screen(0.86),
-      w: w_to_screen(47, 2.5, 0.86),
-      h: h_to_screen(51, 2.5, 0.86),
+      y: y_to_screen(0.863),
+      w: w_to_screen(65, 2.5, 0.86),
+      h: h_to_screen(65, 2.5, 0.86),
       anchor_x: 0.5,
       anchor_y: 0.5,
-      path: "sprites/player.png",
+      path: "sprites/entrance.png",
       flip_horizontally: true
     }
-=end
     outputs.primitives << render_items.sort_by { |item| item.y }.reverse
   end
 
@@ -231,6 +231,14 @@ class Game
       return { spot: spot, details: details } if details[:occupied].nil?
     end
     nil # Return nil if no empty spot is found
+  end
+
+  def update_queueing_customers
+
+  end
+
+  def check_customers_at_entrance
+
   end
 
   def update_walking_customers
