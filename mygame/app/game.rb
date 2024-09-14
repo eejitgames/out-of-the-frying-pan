@@ -1,5 +1,7 @@
 class Game
   attr_gtk
+  attr_accessor :customer_queue
+  attr_accessor :customers
 
   def tick
     defaults
@@ -8,6 +10,7 @@ class Game
     render
 
     outputs.debug.watch state
+    outputs.watch "#{GTK.current_framerate} FPS"
   end
 
   def calc
@@ -24,10 +27,7 @@ class Game
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
     state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 1)
 
-    # customers walking along outside
-    check_customers_at_entrance
     update_walking_customers
-    update_queueing_customers
 
     @clock += 1
   end
@@ -67,14 +67,14 @@ class Game
       y: 0.86
     }
     @customer_queue ||= {
-      spot1: { x: 0.92, y: 0.68, occupied: nil },
+      spot1: { x: 0.92, y: 0.68, occupied: nil }, # this is the front of the queue
       spot2: { x: 0.90, y: 0.70, occupied: nil },
       spot3: { x: 0.88, y: 0.72, occupied: nil },
       spot4: { x: 0.86, y: 0.74, occupied: nil },
       spot5: { x: 0.84, y: 0.76, occupied: nil },
       spot6: { x: 0.82, y: 0.78, occupied: nil },
       spot7: { x: 0.80, y: 0.80, occupied: nil },
-      spot8: { x: 0.78, y: 0.82, occupied: nil }
+      spot8: { x: 0.78, y: 0.82, occupied: nil }  # this is the back of the queue
     }
     @customers ||= {
       customer1: { x: 0.74, y: 0.86, speed: 0.0025, mode: :outside },  # starts at the entrance, moves to queue
@@ -87,7 +87,7 @@ class Game
     @vector_y = 0
     @player_flip = true
     @max_customers = 50
-    @add_customer_check = 0.98 # lower is faster
+    @add_customer_check = 0.98 # when lower, customers are added faster
     @defaults_set = :true
   end
 
@@ -238,18 +238,44 @@ class Game
   def update_queueing_customers
     # return if there is no one in the queue
     return unless @customer_queue.any? { |_, spot| !spot[:occupied].nil? }
+    # start at spot1, through to spot8 moving customers who are not standing where they should be
+    # source and target coordinates are known, use easing to move to position in queue
+    @customer_queue.each do |id, spot|
+      next if spot.occupied.nil?
+      if @customers[spot.occupied].x != spot.x || @customers[spot.occupied].y != spot.y
+      # putz "#{spot.occupied} is not standing in the right place"
+      end
+    end
+
+
+
+
+=begin
+def move_anchors_and_chains_outward
+  outward_anchors = @anchors.select { |_, anchor| anchor[:state] == :outward }
+  unless outward_anchors.empty?
+    outward_anchors.each_value do |anchor|
+      sx = anchor.ship.x
+      sy = anchor.ship.y
+      tx = anchor.target.x
+      ty = anchor.target.y
+      progress = @args_easing.ease(anchor.start, @my_tick_count, anchor.duration, :smooth_stop_quad)
+      calc_x = sx + (tx - sx) * progress
+      calc_y = sy + (ty - sy) * progress
+      anchor.state = :endpoint if progress >= 1
+=end
   end
 
   def check_customers_at_entrance
     # return if there is no open spot in the queue
-    return unless find_empty_spot_closest_to_the_front
+    spot_closest_to_the_front = find_empty_spot_closest_to_the_front
+    return unless spot_closest_to_the_front
     in_doorway = @customers.find do |id, customer|
       customer[:mode] == :outside && customer[:x] >= @entrance.x - 0.002 && customer[:x] <= @entrance.x + 0.002
     end
 
     if in_doorway
-      # puts "customer at entrance: #{in_doorway[0]}" # key (e.g., customer1)
-      # puts "customer details: #{in_doorway[1]}"     # customer hash
+      @customer_queue[spot_closest_to_the_front[:spot]].occupied = in_doorway[0]
       in_doorway[1].mode = :queueing
     end
   end
@@ -272,9 +298,10 @@ class Game
         customer.x = -0.01 if customer.x > 1.02
         customer.x = 1.01 if customer.x < -0.02
       end
-    else
-      # check if any customers are at the entrance/join the queue
-
+  else
+      # check if any customers are at the entrance/join the queue, and update queue
+      check_customers_at_entrance
+      update_queueing_customers
       # also randomly add a new customer outside
       add_new_customer if rand > @add_customer_check && @customers.size < @max_customers
     end
