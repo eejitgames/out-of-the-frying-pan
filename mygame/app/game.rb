@@ -63,23 +63,19 @@ class Game
       }
     end
     @entrance ||= {
-      x: 0.74,
+      x: 0.73,
       y: 0.86
     }
-    @customer_queue ||= {
-      spot1: { x: 0.92, y: 0.68, occupied: nil }, # this is the front of the queue
-      spot2: { x: 0.90, y: 0.70, occupied: nil },
-      spot3: { x: 0.88, y: 0.72, occupied: nil },
-      spot4: { x: 0.86, y: 0.74, occupied: nil },
-      spot5: { x: 0.84, y: 0.76, occupied: nil },
-      spot6: { x: 0.82, y: 0.78, occupied: nil },
-      spot7: { x: 0.80, y: 0.80, occupied: nil },
-      spot8: { x: 0.78, y: 0.82, occupied: nil }  # this is the back of the queue
-    }
+    @customer_queue ||= {}
+    scale_factor = 0.02
+    10.times do |i|
+      @customer_queue[:"spot#{i + 1}"] = { x: 0.91 - (i * scale_factor), y: 0.68 + (i * scale_factor), occupied: nil }
+      scale_factor *= 0.96
+    end
     @customers ||= {
-      customer1: { x: 0.74, y: 0.86, speed: 0.0025, mode: :outside },  # starts at the entrance, moves to queue
-      customer2: { x: -0.01, y: 0.86, speed: 0.0025, mode: :outside }, # starts off the left side, moves right
-      customer3: { x: 1.01, y: 0.86, speed: -0.0025, mode: :outside }  # starts off the right side, move left
+      customer1: { x: -0.01, y: 0.86, speed: 0.0025, mode: :outside }, # starts off the left side, moves right
+      customer2: { x: 1.01, y: 0.86, speed: -0.0025, mode: :outside }  # starts off the right side, move left
+      # customer3: { x: 0.74, y: 0.86, speed: 0.0025, mode: :outside }  # starts at the entrance, moves to queue
     }
     @next_customer_id = 4
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
@@ -165,7 +161,7 @@ class Game
     }
     # placeholder/doorway/entrance
     render_items << {
-      x: x_to_screen(0.74),
+      x: x_to_screen(@entrance.x),
       y: y_to_screen(0.8615),
       w: w_to_screen(100, 1.35, 0.86),
       h: h_to_screen(100, 1.5, 0.86),
@@ -223,7 +219,7 @@ class Game
     dir = rand > 0.5 ? :right : :left
     right_speed = rand * (0.0030 - 0.0020) + 0.0020 # min 0.0020, max 0.0030
     left_speed = right_speed * -1
-    id = "customer#{@next_customer_id}".to_sym
+    id = :"customer#{@next_customer_id}"
     @next_customer_id += 1
     @customers[id] = { x: dir == :right ? -0.01 : 1.01, y: 0.86, speed: dir == :right ? right_speed : left_speed, mode: :outside }
   end
