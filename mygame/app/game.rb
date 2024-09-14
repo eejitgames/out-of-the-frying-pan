@@ -223,9 +223,9 @@ class Game
     dir = rand > 0.5 ? :right : :left
     right_speed = rand * (0.0030 - 0.0020) + 0.0020 # min 0.0020, max 0.0030
     left_speed = right_speed * -1
-    customer_key = "customer#{@next_customer_id}".to_sym
+    id = "customer#{@next_customer_id}".to_sym
     @next_customer_id += 1
-    @customers[customer_key] = { x: dir == :right ? -0.01 : 1.01, y: 0.86, speed: dir == :right ? right_speed : left_speed, mode: :outside }
+    @customers[id] = { x: dir == :right ? -0.01 : 1.01, y: 0.86, speed: dir == :right ? right_speed : left_speed, mode: :outside }
   end
 
   def find_empty_spot_closest_to_the_front
@@ -244,16 +244,19 @@ class Game
       next if spot.occupied.nil?
       if @customers[spot.occupied].x != spot.x || @customers[spot.occupied].y != spot.y
       # putz "#{spot.occupied} is not standing in the right place"
+        sx = @entrance.x
+        sy = @entrance.y
+        tx = spot.x
+        ty = spot.y
+        progress = easing.ease(@customers[spot.occupied].start_time, @clock, 60, :smooth_stop_quad)
+        calc_x = (sx + (tx - sx) * progress).cap_min_max(0, 1)
+        calc_y = (sy + (ty - sy) * progress).cap_min_max(0, 1)
+        @customers[spot.occupied].x = calc_x
+        @customers[spot.occupied].y = calc_y
       end
     end
 
-
-
-
 =begin
-def move_anchors_and_chains_outward
-  outward_anchors = @anchors.select { |_, anchor| anchor[:state] == :outward }
-  unless outward_anchors.empty?
     outward_anchors.each_value do |anchor|
       sx = anchor.ship.x
       sy = anchor.ship.y
@@ -276,6 +279,7 @@ def move_anchors_and_chains_outward
 
     if in_doorway
       @customer_queue[spot_closest_to_the_front[:spot]].occupied = in_doorway[0]
+      in_doorway[1].start_time = @clock
       in_doorway[1].mode = :queueing
     end
   end
