@@ -8,7 +8,6 @@ class Game
     render
 
     outputs.debug.watch state
-    # outputs.debug.watch "customers walking: #{@customers.size}"
   end
 
   def calc
@@ -26,8 +25,8 @@ class Game
     state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 1)
 
     # customers walking along outside
-    update_walking_customers
     check_customers_at_entrance
+    update_walking_customers
     update_queueing_customers
 
     @clock += 1
@@ -87,6 +86,8 @@ class Game
     @vector_x = 0
     @vector_y = 0
     @player_flip = true
+    @max_customers = 50
+    @add_customer_check = 0.98 # lower is faster
     @defaults_set = :true
   end
 
@@ -165,14 +166,15 @@ class Game
     # placeholder/doorway/entrance
     render_items << {
       x: x_to_screen(0.74),
-      y: y_to_screen(0.863),
-      w: w_to_screen(65, 2.5, 0.86),
-      h: h_to_screen(65, 2.5, 0.86),
+      y: y_to_screen(0.8615),
+      w: w_to_screen(100, 1.35, 0.86),
+      h: h_to_screen(100, 1.5, 0.86),
       anchor_x: 0.5,
       anchor_y: 0.5,
       path: "sprites/entrance.png",
       flip_horizontally: true
     }
+
     outputs.primitives << render_items.sort_by { |item| item.y }.reverse
   end
 
@@ -217,28 +219,39 @@ class Game
     end
   end
 
-  def new_customer
+  def add_new_customer
     dir = rand > 0.5 ? :right : :left
-    right_speed = rand * (0.0030 - 0.0020) + 0.0020
-    left_speed =  right_speed * -1
+    right_speed = rand * (0.0030 - 0.0020) + 0.0020 # min 0.0020, max 0.0030
+    left_speed = right_speed * -1
     customer_key = "customer#{@next_customer_id}".to_sym
     @next_customer_id += 1
     @customers[customer_key] = { x: dir == :right ? -0.01 : 1.01, y: 0.86, speed: dir == :right ? right_speed : left_speed, mode: :outside }
   end
 
-  def find_empty_spot_closest_to_the_front(queue)
-    queue.each do |spot, details|
+  def find_empty_spot_closest_to_the_front
+    @customer_queue.each do |spot, details|
       return { spot: spot, details: details } if details[:occupied].nil?
     end
     nil # Return nil if no empty spot is found
   end
 
   def update_queueing_customers
-
+    # return if there is no one in the queue
+    return unless @customer_queue.any? { |_, spot| !spot[:occupied].nil? }
   end
 
   def check_customers_at_entrance
+    # return if there is no open spot in the queue
+    return unless find_empty_spot_closest_to_the_front
+    in_doorway = @customers.find do |id, customer|
+      customer[:mode] == :outside && customer[:x] >= @entrance.x - 0.002 && customer[:x] <= @entrance.x + 0.002
+    end
 
+    if in_doorway
+      # puts "customer at entrance: #{in_doorway[0]}" # key (e.g., customer1)
+      # puts "customer details: #{in_doorway[1]}"     # customer hash
+      in_doorway[1].mode = :queueing
+    end
   end
 
   def update_walking_customers
@@ -263,7 +276,7 @@ class Game
       # check if any customers are at the entrance/join the queue
 
       # also randomly add a new customer outside
-      new_customer if rand > 0.98 && @customers.size < 50
+      add_new_customer if rand > @add_customer_check && @customers.size < @max_customers
     end
   end
 
