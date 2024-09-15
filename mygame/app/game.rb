@@ -1,5 +1,8 @@
 class Game
   attr_gtk
+  attr_accessor :customers
+  attr_accessor :customer_queue
+  attr_accessor :seating
 
   def tick
     defaults
@@ -8,8 +11,7 @@ class Game
     render
 
     outputs.debug.watch state
-    outputs.debug.watch @clock
-    outputs.watch "#{GTK.current_framerate} FPS"
+    # outputs.watch "#{GTK.current_framerate} FPS"
   end
 
   def calc
@@ -33,6 +35,7 @@ class Game
 
   def defaults
     return if @defaults_set
+    srand
     @screen_height ||= 720
     @screen_width ||= 1280
     @clock ||= 0
@@ -51,6 +54,23 @@ class Game
       table7: { x: 0.63, y: 0.1  },
       table8: { x: 0.87, y: 0.1  }
     }
+
+    @seating ||= {}
+    offset_x_back = 0.04
+    offset_x_front = 0.06
+    offset_y = 0.06
+    counter = 1
+    @tables.each do |table_id, table_info|
+      3.times do |i|
+        offset_x = (counter <= 12) ? offset_x_back : offset_x_front
+        id = :"seat#{counter}"
+        x = table_info[:x] + (i - 1) * offset_x  # Seats on left, center, and right
+        y = table_info[:y] + offset_y  # Shift seats slightly down
+        @seating[id] = { x: x, y: y }
+        counter += 1
+      end
+    end
+
     table_rects = @tables.map do |id, table|
       table_width = w_to_screen(139, 1.7, table.y)
       table_height = h_to_screen(62, 1.7, table.y)
@@ -66,16 +86,19 @@ class Game
       y: 0.86
     }
     @customer_queue ||= {}
-    scale_factor = 0.02
+    @queue_scale_factor = 0.02
     @customer_queue_length = 10
     @customer_queue_length.times do |i|
-      @customer_queue[:"spot#{i + 1}"] = { x: 0.906 - (i * scale_factor), y: 0.68 + (i * scale_factor), occupied: nil }
-      scale_factor *= 0.96
+      @customer_queue[:"spot#{i + 1}"] = { x: 0.906 - (i * @queue_scale_factor), y: 0.68 + (i * @queue_scale_factor), occupied: nil }
+      @queue_scale_factor *= 0.96
     end
     @customers ||= {
-      customer1: { x: -0.01, y: 0.86, speed: 0.0025, mode: :outside }, # starts off the left side, moves right
-      customer2: { x: 1.01, y: 0.86, speed: -0.0025, mode: :outside }  # starts off the right side, move left
-      # customer3: { x: @entrance.x, y: @entrance.y, speed: 0.0025, mode: :outside }  # starts at the entrance, moves to queue
+      # starts off the left side, moves right
+      customer1: { x: -0.01, y: 0.86, speed: 0.0025, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
+      # starts off the right side, move left
+      customer2: { x: 1.01, y: 0.86, speed: -0.0025, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
+      # starts at the entrance, moves to queue
+      # customer3: { x: @entrance.x, y: @entrance.y, speed: 0.0025, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
     }
     @next_customer_id = 4
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
@@ -105,6 +128,19 @@ class Game
     outputs.primitives << { x: 0, y: 0, w: 1280, h: 720, path: "sprites/fuds.png" }
 
     render_items = []
+
+    #seating
+    @seating.each do |id, seat|
+      render_items << {
+        x: x_to_screen(seat.x),
+        y: y_to_screen(seat.y),
+        w: w_to_screen(50, 1, seat.y),
+        h: h_to_screen(50, 1, seat.y),
+        anchor_x: 0.5,
+        anchor_y: 0.5,
+        path: :pixel
+      }
+    end
 
     # tables
     @tables.each do |id, table|
@@ -208,7 +244,9 @@ class Game
     left_speed = right_speed * -1
     id = :"customer#{@next_customer_id}"
     @next_customer_id += 1
-    @customers[id] = { x: dir == :right ? -0.01 : 1.01, y: 0.86, speed: dir == :right ? right_speed : left_speed, mode: :outside }
+    x = dir == :right ? -0.01 : 1.01
+    s = dir == :right ? right_speed : left_speed
+    @customers[id] = { x: x, y: 0.86, speed: s, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
   end
 
   def find_empty_spot_closest_to_the_front
@@ -218,7 +256,57 @@ class Game
     nil # Return nil if no empty spot is found
   end
 
-  def update_queueing_customers
+  def check_available_seating
+  end
+
+  def update_customers_going_to_table
+  end
+
+=begin
+    def update_sitting_customers
+      delete_me = @customer_queue[:spot1][:occupied]
+      if @clock.zmod? 300
+      # do nothing, unless there is someone at the front of the queue
+        if delete_me
+          # @customers.delete(delete_me)
+          @customers[delete_me].x = 0.5
+          @customers[delete_me].y = 0.5
+          @customer_queue[:spot1][:occupied] = nil
+          # Shift customers in spots2 - 10 up one place in the queue
+          (2..@customer_queue_length).each do |i|
+            customer_in_the_index_spot = @customer_queue[:"spot#{i}"][:occupied]
+            customer_in_front_of_index_spot = @customer_queue[:"spot#{i - 1}"][:occupied]
+            # adjust which customers occupy which spots
+            # customer in the index spot is assigned to the spot in front of them
+            customer_in_front_of_index_spot = customer_in_the_index_spot
+            # adjust the source x and y for the customers themselves, to move to new spot in the queue
+            #the customer in spot1 sx sy should be set to spot2
+            if customer && @customers[customer].mode == :in_queue
+              @customers[customer].sx = @customer_queue[:"spot#{i - 1}"].x
+              @customers[customer].sy = @customer_queue[:"spot#{i - 1}"].y
+              @customers[customer].start_time = @clock
+            end
+            #@customer_queue[:"spot#{i - 1}"][:occupied] = @customer_queue[:"spot#{i}"][:occupied]
+            #@customer_queue[:"spot#{i - 1}"][:occupied] = @customer_queue[:"spot#{i}"][:occupied]
+          end
+
+          #if @customer_queue[:"spot#{@customer_queue_length}"][:occupied] != nil
+            # @customer_queue_length.times do |i|
+            #   @customer_queue[:"spot#{i + 1}"] = { x: 0.906 - (i * scale_factor), y: 0.68 + (i * scale_factor), occupied: nil }
+            #   scale_factor *= 0.96
+            # end
+          #  @customers[customer].sx = 0.906 - (@customer_queue_length * @queue_scale_factor)
+          #  @customers[customer].sy = 0.68 + (@customer_queue_length * @queue_scale_factor)
+          #end
+
+          # Set last spot to have no customer
+          @customer_queue[:"spot#{@customer_queue_length}"][:occupied] = nil
+        end
+      end
+    end
+=end
+
+  def update_customers_in_the_queue
     # return if there is no one in the queue
     return unless @customer_queue.any? { |_, spot| !spot[:occupied].nil? }
     # start at spot1, through to spot8 moving customers who are not standing where they should be
@@ -227,8 +315,8 @@ class Game
       next if spot.occupied.nil?
       if @customers[spot.occupied].x != spot.x || @customers[spot.occupied].y != spot.y
       # putz "#{spot.occupied} is not standing in the right place"
-        sx = @entrance.x
-        sy = @entrance.y
+        sx = @customers[spot.occupied].sx
+        sy = @customers[spot.occupied].sy
         tx = spot.x
         ty = spot.y
         progress = easing.ease(@customers[spot.occupied].start_time, @clock, 60, :smooth_stop_quad)
@@ -236,6 +324,7 @@ class Game
         calc_y = (sy + (ty - sy) * progress).cap_min_max(0, 1)
         @customers[spot.occupied].x = calc_x
         @customers[spot.occupied].y = calc_y
+        @customers[spot.occupied].mode = :in_queue if progress >= 1
       end
     end
   end
@@ -276,26 +365,11 @@ class Game
   else
       # check if any customers are at the entrance/join the queue, and update queue
       check_customers_at_entrance
-      update_queueing_customers
-      # update_sitting_customers
+      update_customers_in_the_queue   # customers joining the queue
+      check_available_seating         # is there a seat free to sit at a table
+      update_customers_going_to_table # customers on the way to sit at a table
       # also randomly add a new customer outside
       add_new_customer if rand > @add_customer_check && @customers.size < @max_customers
-    end
-  end
-
-  def update_sitting_customers
-    customer = @customer_queue[:spot1][:occupied]
-    if @clock.zmod? 600
-      if customer
-        @customers.delete(customer) if customer
-        @customer_queue[:spot1][:occupied] = nil
-        # Shift customers up from spot2 to spot10
-        (2..@customer_queue_length).each do |i|
-          @customer_queue[:"spot#{i - 1}"][:occupied] = @customer_queue[:"spot#{i}"][:occupied]
-        end
-        # Set last spot to have no customer
-        @customer_queue[:"spot#{@customer_queue_length}"][:occupied] = nil
-      end
     end
   end
 
