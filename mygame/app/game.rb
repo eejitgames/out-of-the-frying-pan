@@ -1,7 +1,5 @@
 class Game
   attr_gtk
-  attr_accessor :customer_queue
-  attr_accessor :customers
 
   def tick
     defaults
@@ -10,6 +8,7 @@ class Game
     render
 
     outputs.debug.watch state
+    outputs.debug.watch @clock
     outputs.watch "#{GTK.current_framerate} FPS"
   end
 
@@ -27,7 +26,7 @@ class Game
     state.player.x = (state.player.x + @vector_x).cap_min_max(0, 1)
     state.player.y = (state.player.y + @vector_y).cap_min_max(0.02, 1)
 
-    update_walking_customers
+    update_customer_movement
 
     @clock += 1
   end
@@ -68,14 +67,15 @@ class Game
     }
     @customer_queue ||= {}
     scale_factor = 0.02
-    10.times do |i|
-      @customer_queue[:"spot#{i + 1}"] = { x: 0.91 - (i * scale_factor), y: 0.68 + (i * scale_factor), occupied: nil }
+    @customer_queue_length = 10
+    @customer_queue_length.times do |i|
+      @customer_queue[:"spot#{i + 1}"] = { x: 0.906 - (i * scale_factor), y: 0.68 + (i * scale_factor), occupied: nil }
       scale_factor *= 0.96
     end
     @customers ||= {
       customer1: { x: -0.01, y: 0.86, speed: 0.0025, mode: :outside }, # starts off the left side, moves right
       customer2: { x: 1.01, y: 0.86, speed: -0.0025, mode: :outside }  # starts off the right side, move left
-      # customer3: { x: 0.74, y: 0.86, speed: 0.0025, mode: :outside }  # starts at the entrance, moves to queue
+      # customer3: { x: @entrance.x, y: @entrance.y, speed: 0.0025, mode: :outside }  # starts at the entrance, moves to queue
     }
     @next_customer_id = 4
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
@@ -133,21 +133,7 @@ class Game
         flip_horizontally: customer.speed > 0
       }
     end
-=begin
-    # queue testing
-    @customer_queue.each do |id, customer|
-      render_items << {
-        x: x_to_screen(customer.x),
-        y: y_to_screen(customer.y),
-        w: w_to_screen(47, 2.5, customer.y),
-        h: h_to_screen(51, 2.5, customer.y),
-        anchor_x: 0.5,
-        anchor_y: 0.5,
-        path: "sprites/player.png",
-        flip_horizontally: true
-      }
-    end
-=end
+
     # player
     render_items << {
       x: x_to_screen(state.player.x),
@@ -159,6 +145,7 @@ class Game
       path: "sprites/player.png",
       flip_horizontally: @player_flip
     }
+
     # placeholder/doorway/entrance
     render_items << {
       x: x_to_screen(@entrance.x),
@@ -251,18 +238,6 @@ class Game
         @customers[spot.occupied].y = calc_y
       end
     end
-
-=begin
-    outward_anchors.each_value do |anchor|
-      sx = anchor.ship.x
-      sy = anchor.ship.y
-      tx = anchor.target.x
-      ty = anchor.target.y
-      progress = @args_easing.ease(anchor.start, @my_tick_count, anchor.duration, :smooth_stop_quad)
-      calc_x = sx + (tx - sx) * progress
-      calc_y = sy + (ty - sy) * progress
-      anchor.state = :endpoint if progress >= 1
-=end
   end
 
   def check_customers_at_entrance
@@ -280,7 +255,7 @@ class Game
     end
   end
 
-  def update_walking_customers
+  def update_customer_movement
     case @clock % 4
     when 1
       # tick 1, 5, 9, etc. update right moving customers
@@ -302,8 +277,25 @@ class Game
       # check if any customers are at the entrance/join the queue, and update queue
       check_customers_at_entrance
       update_queueing_customers
+      # update_sitting_customers
       # also randomly add a new customer outside
       add_new_customer if rand > @add_customer_check && @customers.size < @max_customers
+    end
+  end
+
+  def update_sitting_customers
+    customer = @customer_queue[:spot1][:occupied]
+    if @clock.zmod? 600
+      if customer
+        @customers.delete(customer) if customer
+        @customer_queue[:spot1][:occupied] = nil
+        # Shift customers up from spot2 to spot10
+        (2..@customer_queue_length).each do |i|
+          @customer_queue[:"spot#{i - 1}"][:occupied] = @customer_queue[:"spot#{i}"][:occupied]
+        end
+        # Set last spot to have no customer
+        @customer_queue[:"spot#{@customer_queue_length}"][:occupied] = nil
+      end
     end
   end
 
