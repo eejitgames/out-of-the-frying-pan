@@ -90,9 +90,9 @@ class Game
     end
     @customers ||= {
       # starts off the left side, moves right
-      customer1: { x: -0.01, y: 0.86, speed: 0.0025, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
+      customer1: { x: -0.01, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
       # starts off the right side, moves left
-      customer2: { x: 1.01, y: 0.86, speed: -0.0025, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
+      customer2: { x: 1.01, y: 0.86, speed: -0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
     }
     @next_customer_id = 4
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
@@ -234,7 +234,7 @@ class Game
 
   def add_new_customer
     dir = rand > 0.5 ? :right : :left
-    right_speed = rand * (0.0030 - 0.0020) + 0.0020 # min 0.0020, max 0.0030
+    right_speed = rand * (0.002 - 0.001) + 0.001 # min 0.001, max 0.002
     left_speed = right_speed * -1
     id = :"customer#{@next_customer_id}"
     @next_customer_id += 1
@@ -252,6 +252,7 @@ class Game
 
   def check_available_seating
     # guard clause: if there is no available seat, or if the queue is empty, return
+    # possibly also is someone is joining the queue, return
     # else if possible, assign front of the queue to a seat
     # update source and target x, y coordinates
   end
@@ -323,7 +324,7 @@ class Game
         end
         tx = spot.x
         ty = spot.y
-        progress = easing.ease(@customers[spot.occupied].start_time, @clock, 60, :smooth_stop_quad)
+        progress = easing.ease(@customers[spot.occupied].start_time, @clock, 120, :smooth_stop_cube) # cube, quad, quart, quint
         calc_x = (sx + (tx - sx) * progress).cap_min_max(0, 1)
         calc_y = (sy + (ty - sy) * progress).cap_min_max(0, 1)
         @customers[spot.occupied].x = calc_x
@@ -345,6 +346,7 @@ class Game
       @customer_queue[spot_closest_to_the_front[:spot]].occupied = in_doorway[0]
       in_doorway[1].start_time = @clock
       in_doorway[1].mode = :queueing
+      in_doorway[1].speed = in_doorway[1].speed.abs # make the customer sprites in the queue face right
     end
   end
 
