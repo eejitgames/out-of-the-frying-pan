@@ -62,7 +62,7 @@ class Game
         id = :"seat#{counter}"
         x = table_info[:x] + (i - 1) * offset
         y = table_info[:y] + offset + 0.01
-        @seating[id] = { x: x, y: y }
+        @seating[id] = { x: x, y: y, occupied: nil}
         counter += 1
       end
     end
@@ -94,6 +94,22 @@ class Game
       # starts off the right side, moves left
       customer2: { x: 1.01, y: 0.86, speed: -0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
     }
+=begin
+@customers ||= {
+  group1: [
+    { id: :customer1, x: -0.01, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
+  ],
+
+  group2: [
+    { id: :customer2, x: 1.01, y: 0.86, speed: -0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
+    { id: :customer3, x: 1.02, y: 0.86, speed: -0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
+  ],
+
+  group3: [
+    { id: :customer4, x: -0.03, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
+    { id: :customer5, x: -0.04, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
+    { id: :customer6, x: -0.05, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy:
+=end
     @next_customer_id = 4
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
     @vector_x = 0
@@ -217,7 +233,7 @@ class Game
 
   def calc_player_rect(w, scale, x, y)
     player_width = calc_player_width_for_hitbox_with_tables(w, scale, y)
-    { x: x_to_screen(x) - player_width/2, y: y_to_screen(y), w: player_width, h: 0 }
+    { x: x_to_screen(x) - player_width/2, y: y_to_screen(y) * 1.01, w: player_width, h: 0 }
   end
 
   def customers_in_mode(mode, dir: nil)
@@ -250,11 +266,53 @@ class Game
     nil # Return nil if no empty spot is found
   end
 
-  def check_available_seating
+  def check_available_seating(customer)
     # guard clause: if there is no available seat, or if the queue is empty, return
     # possibly also is someone is joining the queue, return
     # else if possible, assign front of the queue to a seat
     # update source and target x, y coordinates
+    return if customer.nil?
+
+    # 1. Find an empty table (i.e., a table where all seats are unoccupied)
+    empty_table = @seating.find do |seat_id, seat_info|
+      seat_num = seat_id.to_s.gsub('seat', '').to_i
+      table_num = (seat_num - 1) / 3 + 1 # Each table has 3 seats, get the table number
+      # Check if all seats of this table are unoccupied
+      table_seats = @seating.select { |id, _| ((id.to_s.gsub('seat', '').to_i - 1) / 3 + 1) == table_num }
+      table_seats.values.all? { |seat| seat[:occupied].nil? }
+    end
+
+    # 2. If an empty table is found, assign the customer to the first seat (seat 1 of the table)
+    if empty_table
+      first_seat_of_table = empty_table.first
+      @seating[first_seat_of_table][:occupied] = customer
+      return first_seat_of_table
+    end
+
+    # 3. If no empty table, find a table where the 3rd seat (furthest seat) is available
+    available_third_seat = @seating.find do |seat_id, seat_info|
+      seat_num = seat_id.to_s.gsub('seat', '').to_i
+      seat_num % 3 == 0 && seat_info[:occupied].nil? # The third seat has seat numbers like 3, 6, 9, ...
+    end
+
+    if available_third_seat
+      @seating[available_third_seat.first][:occupied] = customer
+      return available_third_seat.first
+    end
+
+    # 4. If the first and third seats are taken, find an available middle seat (seat 2 of any table)
+    available_middle_seat = @seating.find do |seat_id, seat_info|
+      seat_num = seat_id.to_s.gsub('seat', '').to_i
+      seat_num % 3 == 2 && seat_info[:occupied].nil? # Middle seats are seat numbers like 2, 5, 8, ...
+    end
+
+    if available_middle_seat
+      @seating[available_middle_seat.first][:occupied] = customer
+      return available_middle_seat.first
+    end
+
+    # 5. If no seat is available, return nil (or raise an error)
+    nil
   end
 
   def update_customers_going_to_table
@@ -306,48 +364,15 @@ class Game
     end
 =end
 
+  def form_a_new_group
+    # don't begin forming a new group if there are no spots available in the queue
+    # a group consists of 1, 2 or 3 customers
+  end
+
   def update_customers_in_the_queue
-    # return if there is no one in the queue
-    return unless @customer_queue.any? { |_, spot| !spot[:occupied].nil? }
-    # start at spot1, through to spot8 moving customers who are not standing where they should be
-    # source and target coordinates are known, use easing to move to position in queue
-    @customer_queue.each do |id, spot|
-      next if spot.occupied.nil?
-      if @customers[spot.occupied].x != spot.x || @customers[spot.occupied].y != spot.y
-      # putz "#{spot.occupied} is not standing in the right place"
-        if @customers[spot.occupied].mode = :in_queue
-          sx = @customers[spot.occupied].sx
-          sy = @customers[spot.occupied].sy
-        else
-          sx = @entrance.x
-          sy = @entrance.y
-        end
-        tx = spot.x
-        ty = spot.y
-        progress = easing.ease(@customers[spot.occupied].start_time, @clock, 120, :smooth_stop_cube) # cube, quad, quart, quint
-        calc_x = (sx + (tx - sx) * progress).cap_min_max(0, 1)
-        calc_y = (sy + (ty - sy) * progress).cap_min_max(0, 1)
-        @customers[spot.occupied].x = calc_x
-        @customers[spot.occupied].y = calc_y
-        @customers[spot.occupied].mode = :in_queue if progress >= 1
-      end
-    end
   end
 
   def check_customers_at_entrance
-    # return if there is no open spot in the queue
-    spot_closest_to_the_front = find_empty_spot_closest_to_the_front
-    return unless spot_closest_to_the_front
-    in_doorway = @customers.find do |id, customer|
-      customer[:mode] == :outside && customer[:x] >= @entrance.x - 0.002 && customer[:x] <= @entrance.x + 0.002
-    end
-
-    if in_doorway
-      @customer_queue[spot_closest_to_the_front[:spot]].occupied = in_doorway[0]
-      in_doorway[1].start_time = @clock
-      in_doorway[1].mode = :queueing
-      in_doorway[1].speed = in_doorway[1].speed.abs # make the customer sprites in the queue face right
-    end
   end
 
   def update_customer_movement
@@ -369,10 +394,11 @@ class Game
         customer.x = 1.01 if customer.x < -0.02 # customer has moved too far to the left, move to the right side offscreen
       end
   else
+      form_a_new_group
       check_customers_at_entrance     # check if any customers are at the entrance/join the queue, and update queue
       update_customers_in_the_queue   # customers joining the queue
-      check_available_seating         # is there a seat free to sit at a table
-      update_customers_going_to_table # customers on the way to sit at a table
+      # check_available_seating(@customer_queue[:"spot1"][:occupied]) # is there a seat free to sit at a table
+      # update_customers_going_to_table # customers on the way to sit at a table
       add_new_customer if rand > @add_customer_check && @customers.size < @max_customers
     end
   end
