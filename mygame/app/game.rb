@@ -108,7 +108,9 @@ class Game
   group3: [
     { id: :customer4, x: -0.03, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
     { id: :customer5, x: -0.04, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside },
-    { id: :customer6, x: -0.05, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy:
+    { id: :customer6, x: -0.05, y: 0.86, speed: 0.002, start_time: nil, sx: @entrance.x, sy: @entrance.y, mode: :outside }
+  ]
+}
 =end
     @next_customer_id = 4
     @tables_quad_tree ||= geometry.quad_tree_create table_rects
